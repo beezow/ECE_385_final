@@ -46,7 +46,23 @@ module final_proj(
 
 );
 
+wire [7:0]		    data_cam;
+wire 				 VSYNC_cam;
+wire 				 HREF_cam;
+wire 				 PCLK_cam;	
+logic 				 MCLK_cam;
 
+assign data_cam[7:0] = ARDUINO_IO[7:0];
+assign LEDR[7:0] = data_cam[7:0];
+assign LEDR[9:8] = 2'b10;
+assign VSYNC_cam = ARDUINO_IO[12];
+assign HREF_cam = ARDUINO_IO[13];
+assign PCLK_cam = ARDUINO_IO[10];
+
+always_ff @(posedge MAX10_CLK1_50) begin
+	MCLK_cam = ~MCLK_cam;
+end
+assign ARDUINO_IO[11] = MCLK_cam;
 
 
 logic Reset_h, vssig, blank, sync, VGA_Clk;
@@ -89,26 +105,44 @@ ball 	  baller(.Reset (Reset_h), .frame_clk(VGA_VS),
 //								 .Ball_size(ballsizesig),
 //								 .Red, .Green, .Blue);	
 
+wire cam_pixel, cam_blank;
+wire pixel_valid;
+logic[18:0] cam_count;
 
-logic latest_bit, bit_on; 
+//cam_wrp cam_wrp(.data_cam, .VSYNC_cam, .HREF_cam, .PCLK_cam, 
+	//			.cam_count, .pixel(cam_pixel), .blank(cam_blank), .rst_n(KEY[0]), .override(SW[0])) ;
+				
+logic[15:0] pixel_data;
+camera_read cam_read(.data_cam, .VSYNC_cam, .HREF_cam, .PCLK_cam, 
+				.cam_count, .pixel_data, .pixel_valid) ;
+				
+assign cam_pixel = pixel_data[7];
+
+HexDriver hex1(.In0(cam_count[18:15]), .Out0(HEX5));
+HexDriver hex2(.In0(cam_count[15:12]), .Out0(HEX4));
+
+logic bit_on; 
 logic we;
-logic [17:0] write_addr, read_addr;
+logic [18:0] write_addr, read_addr;
 
 assign read_addr = drawysig * 640 + drawxsig;
 
-ram307200x1 ram(.out(bit_on), .in(1'b1), .clk(MAX10_CLK1_50), .write_addr( { 8'h00, SW} ) , .read_addr(read_addr), .rst(Reset_h), .we(KEY[1]));
+
+//ram307200x1 ram(.out(bit_on), .in(1'b1), .clk(MAX10_CLK1_50), .write_addr( { 9'h00, SW} ) , .read_addr(read_addr), .rst(Reset_h), .we(KEY[1]));
+ram307200x1 ram(.out(bit_on), .in(cam_pixel), .clk(MAX10_CLK1_50), .write_addr( cam_count ) , .read_addr(read_addr), .rst(Reset_h), .we(pixel_valid));
+//ram307200x1 ram(.out(bit_on), .in(cam_pixel), .clk(MAX10_CLK1_50), .write_addr( cam_count ) , .readt_addr(read_addr), .rst(Reset_h), .we(!cam_blank));
 
 always_comb begin
 	if (blank) begin
 		unique case (bit_on)
 			1'b0: begin
-				Red = 8'hff;
-				Green = 8'h55;
+				Red = 8'h25;
+				Green = 8'h00;
 				Blue = 8'h00;
 			end
 			1'b1: begin
 				Red = 8'h00;
-				Green = 8'hff;
+				Green = 8'h25;
 				Blue = 8'h00;
 			end
 		endcase

@@ -1,7 +1,7 @@
 module ram307200x1 (
 	output logic out,
 	input in,
-	input [17:0] write_addr, read_addr,
+	input [18:0] write_addr, read_addr,
 	input we, clk, rst
 );
 logic mem [307200];
