@@ -14,9 +14,10 @@
 
 
 module  color_mapper ( input        [9:0] BallX, BallY, DrawX, DrawY, Ball_size,
-                       output logic [7:0]  Red, Green, Blue );
+                    //   output logic [7:0]  Red, Green, Blue 
+							  output logic ball_on);
     
-    logic ball_on;
+    //logic ball_on;
 	 
  /* Old Ball: Generated square box by checking if the current pixel is within a square of length
     2*Ball_Size, centered at (BallX, BallY).  Note that this requires unsigned comparisons.
@@ -44,20 +45,20 @@ module  color_mapper ( input        [9:0] BallX, BallY, DrawX, DrawY, Ball_size,
             ball_on = 1'b0;
      end 
        
-    always_comb
-    begin:RGB_Display
-        if ((ball_on == 1'b1)) 
-        begin 
-            Red = 8'hff;
-            Green = 8'h55;
-            Blue = 8'h00;
-        end       
-        else 
-        begin 
-            Red = 8'h00; 
-            Green = 8'h00;
-            Blue = 8'h7f - DrawX[9:3];
-        end      
-    end 
+//    always_comb
+//    begin:RGB_Display
+//        if ((ball_on == 1'b1)) 
+//        begin 
+//            Red = 8'hff;
+//            Green = 8'h55;
+//            Blue = 8'h00;
+//        end       
+//        else 
+//        begin 
+//            Red = 8'h00; 
+//            Green = 8'h00;
+//            Blue = 8'h7f - DrawX[9:3];
+//        end      
+//    end 
     
 endmodule
