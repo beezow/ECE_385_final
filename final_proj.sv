@@ -49,7 +49,9 @@ module final_proj(
 wire [7:0]		    data_cam;
 wire 				 VSYNC_cam;
 wire 				 HREF_cam;
-wire 				 PCLK_cam;	
+wire 				 PCLK_cam;
+wire 				 sioc;
+wire  			 siod;	
 logic 				 MCLK_cam;
 
 assign data_cam[7:0] = ARDUINO_IO[7:0];
@@ -58,6 +60,8 @@ assign LEDR[9:8] = 2'b10;
 assign VSYNC_cam = ARDUINO_IO[12];
 assign HREF_cam = ARDUINO_IO[13];
 assign PCLK_cam = ARDUINO_IO[10];
+assign sioc = ARDUINO_IO[15];
+assign siod = ARDUINO_IO[14];
 
 always_ff @(posedge MAX10_CLK1_50) begin
 	MCLK_cam = ~MCLK_cam;
@@ -131,6 +135,8 @@ assign read_addr = drawysig * 640 + drawxsig;
 ram307200x1 ram(.out(bit_on), .in(cam_pixel), .clk(MAX10_CLK1_50), .write_addr( cam_count ) , .read_addr(read_addr), .rst(Reset_h), .we(pixel_valid),
 				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
 					 );
+					
+					 
 					 
 //ram307200x1 ram(.out(bit_on), .in(cam_pixel), .clk(MAX10_CLK1_50), .write_addr( cam_count ) , .readt_addr(read_addr), .rst(Reset_h), .we(!cam_blank));
 
@@ -146,7 +152,7 @@ color_mapper colormaple( .BallX(ballxsig), .BallY(ballysig),
 								 .ball_on);
 							//	 .Red, .Green, .Blue);	
 
-
+							
 always_comb begin
 	if (blank) begin
 		if (ball_on)

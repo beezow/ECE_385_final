@@ -32,6 +32,7 @@ module  ball ( input Reset, frame_clk,
    
 	logic [18:0] left_idx;
 	logic [18:0] right_idx;
+	logic [4:0]  score;
 	
     always_ff @ (posedge Reset or posedge frame_clk )
     begin: Move_Ball
@@ -42,7 +43,7 @@ module  ball ( input Reset, frame_clk,
 				Ball_Y_Pos <= Ball_Y_Center;
 				Ball_X_Pos <= Ball_X_Center;
 				Ball_X_Motion <= -1;
-				Ball_Y_Motion<= 0;
+				Ball_Y_Motion<= -1;
         end
            
         else 
