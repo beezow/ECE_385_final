@@ -14,7 +14,7 @@
 
 
 module  ball ( input Reset, frame_clk,
-					input bit_on,
+					input [9:0] PaddleX, PaddleY, PaddleS,
                output [9:0]  BallX, BallY, BallS );
     
     logic [9:0] Ball_X_Pos, Ball_X_Motion, Ball_Y_Pos, Ball_Y_Motion, Ball_Size;
@@ -30,9 +30,12 @@ module  ball ( input Reset, frame_clk,
 
     assign Ball_Size = 4;  // assigns the value 4 as a 10-digit binary number, ie "0000000100"
    
-	logic [18:0] left_idx;
-	logic [18:0] right_idx;
-	logic [4:0]  score;
+    int DistX, DistY;
+	 assign DistX = PaddleX - Ball_X_Pos;
+    assign DistY = PaddleY - Ball_Y_Pos;
+
+	 logic in_paddle;
+	 assign in_paddle = ((DistX*DistX/8) + ( DistY*DistY/(PaddleS*PaddleS) ) <= 1);
 	
     always_ff @ (posedge Reset or posedge frame_clk )
     begin: Move_Ball
@@ -42,19 +45,15 @@ module  ball ( input Reset, frame_clk,
 				Ball_X_Motion <= 10'd0; //Ball_X_Step;
 				Ball_Y_Pos <= Ball_Y_Center;
 				Ball_X_Pos <= Ball_X_Center;
-				Ball_X_Motion <= -1;
-				Ball_Y_Motion<= -1;
+				
+				Ball_X_Motion <= 1;//A
+				Ball_Y_Motion <= -1;
+
         end
            
         else 
         begin 
-				 //right_idx = Ball_Y_Pos* 640 + Ball_X_Pos-Ball_Size;
-				 
-				/// all the bounces
-				 if ( bit_on)
-					  Ball_X_Motion <= (~ (Ball_X_Motion) + 1'b1);  // 2's complement.
-					  
-				 else if ( (Ball_Y_Pos + Ball_Size) >= Ball_Y_Max )  // Ball is at the bottom edge, BOUNCE!
+				 if ( (Ball_Y_Pos + Ball_Size) >= Ball_Y_Max )  // Ball is at the bottom edge, BOUNCE!
 					  Ball_Y_Motion <= (~ (Ball_Y_Step) + 1'b1);  // 2's complement.
 					  
 				 else if ( (Ball_Y_Pos - Ball_Size) <= Ball_Y_Min )  // Ball is at the top edge, BOUNCE!
@@ -63,14 +62,14 @@ module  ball ( input Reset, frame_clk,
 				  else if ( (Ball_X_Pos + Ball_Size) >= Ball_X_Max )  // Ball is at the Right edge, BOUNCE!
 					  Ball_X_Motion <= (~ (Ball_X_Step) + 1'b1);  // 2's complement.
 					  
-				 else if ( (Ball_X_Pos - Ball_Size) <= Ball_X_Min )  // Ball is at the Left edge, BOUNCE!
+				 else if ( (Ball_X_Pos - Ball_Size) <= Ball_X_Min || in_paddle)  // Ball is at the Left edge, BOUNCE!
 					  Ball_X_Motion <= Ball_X_Step;
 					  
 				 else 
 					  Ball_Y_Motion <= Ball_Y_Motion;  // Ball is somewhere in the middle, don't bounce, just keep moving
 					  
-				
-
+				 
+					
 				 
 				 Ball_Y_Pos <= (Ball_Y_Pos + Ball_Y_Motion);  // Update ball position
 				 Ball_X_Pos <= (Ball_X_Pos + Ball_X_Motion);

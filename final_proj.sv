@@ -118,7 +118,7 @@ logic bit_on;
 logic we;
 logic [18:0] write_addr, read_addr;
 
-assign read_addr = drawysig * 640 + drawxsig;
+assign read_addr = drawysig * 640 + (640-drawxsig);
 
 //logic[10:0] hand_x, hand_y;
 //HexDriver hex1(.In0(hand_x[3:0]), .Out0(HEX5));
@@ -136,13 +136,34 @@ ram307200x1 ram(.out(bit_on), .in(cam_pixel), .clk(MAX10_CLK1_50), .write_addr( 
 				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
 					 );
 					
-					 
+logic paddle_col [480];
+logic [9:0] paddlexsig, paddleysig, paddlesizesig;
+
+ram480x1 ram_small(.out(paddle_col), .in(bit_on), .clk(MAX10_CLK1_50), .write_addr( drawysig ) , .rst(Reset_h), .we(drawxsig == 10'd20),
+				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
+					 );
+					
 					 
 //ram307200x1 ram(.out(bit_on), .in(cam_pixel), .clk(MAX10_CLK1_50), .write_addr( cam_count ) , .readt_addr(read_addr), .rst(Reset_h), .we(!cam_blank));
 
-ball 	  baller(.bit_on, .Reset (Reset_h), .frame_clk(VGA_VS),
+
+ball 	  baller(.Reset (Reset_h), .frame_clk(VGA_VS),
                .BallX(ballxsig), .BallY(ballysig),
-					.BallS(ballsizesig));
+					.BallS(ballsizesig),
+					.PaddleX(paddlexsig), .PaddleY(paddleysig), .PaddleS(paddlesizesig));			
+
+assign paddlexsig = 20;
+assign paddlesizesig = 80;
+center col_cent(.col(paddle_col), .center(paddleysig))	;							 
+HexDriver hex1(.In0(paddleysig[3:0]), .Out0(HEX3));
+HexDriver hex2(.In0(paddleysig[7:4]), .Out0(HEX4));
+HexDriver hex3(.In0(paddleysig[9:8]), .Out0(HEX5));
+					
+/*paddle 	  paddle(.bit_on, .Reset (Reset_h), .frame_clk(VGA_VS), .vga_clk(MAX10_CLK1_50),
+               .paddleX(paddlexsig), .paddleY(paddleysig),
+					.paddleS(paddlesizesig));
+	*/				
+					
 
 logic ball_on;
 
@@ -150,25 +171,34 @@ color_mapper colormaple( .BallX(ballxsig), .BallY(ballysig),
 								 .DrawX(drawxsig), .DrawY(drawysig), 
 								 .Ball_size(ballsizesig),
 								 .ball_on);
+logic paddle_on;			 
+paddle_mapper paddlemap( .BallX(paddlexsig), .BallY(paddleysig),
+								 .DrawX(drawxsig), .DrawY(drawysig), 
+								 .Ball_size(paddlesizesig),
+								 .ball_on(paddle_on));
 							//	 .Red, .Green, .Blue);	
 
 							
 always_comb begin
 	if (blank) begin
-		if (ball_on)
-			begin
-				Red = 8'h44;
-				Green = 8'h00;
-				Blue = 8'h00;
-			end
+		if (ball_on) begin
+			Red = 8'h44;
+			Green = 8'h00;
+			Blue = 8'h00;
+		end
+		else if (paddle_on) begin
+			Red = 8'h00;
+			Green = 8'h00;
+			Blue = 8'h44;
+		end
 		else begin
 			unique case (bit_on)
-				1'b0: begin
+				1'b1: begin
 					Red = 8'hDD;
 					Green = 8'hDD;
 					Blue = 8'hDD;
 				end
-				1'b1: begin
+				1'b0: begin
 					Red = 8'h1D;
 					Green = 8'h1D;
 					Blue = 8'h1D;
