@@ -53,6 +53,8 @@ wire 				 PCLK_cam;
 wire 				 sioc;
 wire  			 siod;	
 logic 				 MCLK_cam;
+logic dilat_on;
+logic scam;
 
 assign data_cam[7:0] = ARDUINO_IO[7:0];
 assign LEDR[7:0] = data_cam[7:0];
@@ -114,6 +116,16 @@ camera_read cam_read(.data_cam, .VSYNC_cam, .HREF_cam, .PCLK_cam,
 				
 assign cam_pixel = pixel_data[7];
 
+
+//
+//logic idval;
+//assign idval = 1;
+//
+//module dilation_erosion(
+//	.CLK(PCLK_cam),. RST_N(Reset_h), .iDVAL(idval), iDATA, .oDVAL,
+//	output logic [9:0] 	oDATA
+//	);
+
 logic bit_on; 
 logic we;
 logic [18:0] write_addr, read_addr;
@@ -139,20 +151,94 @@ ram307200x1 ram(.out(bit_on), .in(cam_pixel), .clk(MAX10_CLK1_50), .write_addr( 
 					 
 					 
 //ram307200x1 ram(.out(bit_on), .in(cam_pixel), .clk(MAX10_CLK1_50), .write_addr( cam_count ) , .readt_addr(read_addr), .rst(Reset_h), .we(!cam_blank));
-
-ball 	  baller(.bit_on, .Reset (Reset_h), .frame_clk(VGA_VS),
+//
+logic [3:0] Score1, Score2; 
+ball 	  baller(.Reset (Reset_h), .frame_clk(VGA_VS),
                .BallX(ballxsig), .BallY(ballysig),
-					.BallS(ballsizesig));
-
+					.BallS(ballsizesig),
+					.Score1, .Score2);
+//
 logic ball_on;
-
+//
+//
 color_mapper colormaple( .BallX(ballxsig), .BallY(ballysig),
 								 .DrawX(drawxsig), .DrawY(drawysig), 
 								 .Ball_size(ballsizesig),
 								 .ball_on);
-							//	 .Red, .Green, .Blue);	
+//							//	 .Red, .Green, .Blue);	
 
-							
+logic eros_on, eros_on2, dilat_on2;
+erosion erosion1(.CLK(MAX10_CLK1_50), .RST(KEY[0]), .iDVAL(1'b1), .iDATA(bit_on), .oDATA(eros_on),
+	.oDVAL(scam));
+//dilation dilation1(.CLK(MAX10_CLK1_50), .RST(KEY[0]), .iDVAL(1'b1), .iDATA(eros_on), .oDATA(dilat_on),
+//	.oDVAL(scam));	
+//erosion erosion2(.CLK(MAX10_CLK1_50), .RST(KEY[0]), .iDVAL(1'b1), .iDATA(dilat_on2), .oDATA(eros_on2),
+//	.oDVAL(scam));
+//dilation dilation2(.CLK(MAX10_CLK1_50), .RST(KEY[0]), .iDVAL(1'b1), .iDATA(dilat_on), .oDATA(dilat_on2),
+//	.oDVAL(scam));		
+//
+
+logic shape_on1, shape_on2, shape_on3;
+logic [10:0] shape_x1 = 308;
+logic [10:0] shape_y1 = 10;
+logic [10:0] shape_x2 = 320;
+logic [10:0] shape_y2 = 10;	
+logic [10:0] shape_x3 = 332;
+logic [10:0] shape_y3 = 10;		
+logic [10:0] shape_size_x = 8;
+logic [10:0] shape_size_y = 16;
+
+logic [10:0] sprite_addr1, sprite_addr2, sprite_addr3;
+logic [7:0] sprite_data1, sprite_data2, sprite_data3;
+font_rom score1(.addr(sprite_addr1), .data(sprite_data1));
+font_rom score2(.addr(sprite_addr2), .data(sprite_data2));
+font_rom score3(.addr(sprite_addr3), .data(sprite_data3));
+
+always_comb 
+begin
+	if(drawxsig>= shape_x1 && drawxsig<shape_x1+shape_size_x &&
+	drawysig>= shape_y1 && drawysig<shape_y1+shape_size_y)
+	begin
+		shape_on1 = 1'b1;
+		sprite_addr1 = (drawysig-shape_y1+16*'h30+16*Score1);
+	end
+	else 
+	begin
+		shape_on1 = 1'b0;
+		sprite_addr1 = 10'b0;
+	end	
+end
+
+always_comb 
+begin
+	if(drawxsig>= shape_x2 && drawxsig<shape_x2+shape_size_x &&
+	drawysig>= shape_y2 && drawysig<shape_y2+shape_size_y)
+	begin
+		shape_on2 = 1'b1;
+		sprite_addr2 = (drawysig-shape_y2+16*'h3a);
+	end
+	else 
+	begin
+		shape_on2= 1'b0;
+		sprite_addr2 = 10'b0;
+	end	
+end
+
+always_comb 
+begin
+	if(drawxsig>= shape_x3 && drawxsig<shape_x3+shape_size_x &&
+	drawysig>= shape_y3 && drawysig<shape_y3+shape_size_y)
+	begin
+		shape_on3 = 1'b1;
+		sprite_addr3 = (drawysig-shape_y3+16*'h30+16*Score2);
+	end
+	else 
+	begin
+		shape_on3= 1'b0;
+		sprite_addr3 = 10'b0;
+	end	
+end		
+												
 always_comb begin
 	if (blank) begin
 		if (ball_on)
@@ -160,21 +246,44 @@ always_comb begin
 				Red = 8'h44;
 				Green = 8'h00;
 				Blue = 8'h00;
-			end
-		else begin
-			unique case (bit_on)
-				1'b0: begin
-					Red = 8'hDD;
-					Green = 8'hDD;
-					Blue = 8'hDD;
-				end
-				1'b1: begin
-					Red = 8'h1D;
-					Green = 8'h1D;
-					Blue = 8'h1D;
-				end
-			endcase
 		end
+		else begin
+			unique case (eros_on)
+					1'b1: begin
+						Red = 8'hDD;
+						Green = 8'hDD;
+						Blue = 8'hDD;
+					end
+					1'b0: begin
+						Red = 8'h1D;
+						Green = 8'h1D;
+						Blue = 8'h1D;
+					end
+			endcase
+			if ((shape_on1 == 1'b1) && sprite_data1[drawxsig - shape_x1] == 1'b1)
+			begin
+				Red = 8'h00;
+				Green = 8'hff;
+				Blue = 8'h00;
+			end
+			if ((shape_on2 == 1'b1) && sprite_data2[drawxsig - shape_x2] == 1'b1)
+			begin
+				Red = 8'h00;
+				Green = 8'hff;
+				Blue = 8'h00;
+			end
+			if ((shape_on3 == 1'b1) && sprite_data3[drawxsig - shape_x3] == 1'b1)
+			begin
+				Red = 8'h00;
+				Green = 8'hff;
+				Blue = 8'h00;
+			end
+//			else begin
+//				Red = 8'h4f - drawxsig[9:3];
+//				Green = 8'h00;
+//				Blue = 8'h44;
+//			end
+		end	
 	end
 	else begin
 		Red = 8'h00;

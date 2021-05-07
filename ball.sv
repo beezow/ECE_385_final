@@ -11,11 +11,10 @@
 //    For use with ECE 298 Lab 7                                         --
 //    UIUC ECE Department                                                --
 //-------------------------------------------------------------------------
-
-
 module  ball ( input Reset, frame_clk,
-					input bit_on,
-               output [9:0]  BallX, BallY, BallS );
+					input [9:0] PaddleX, PaddleY, PaddleS,
+					output [3:0] Score1, Score2,
+               output [9:0]  BallX, BallY, BallS);
     
     logic [9:0] Ball_X_Pos, Ball_X_Motion, Ball_Y_Pos, Ball_Y_Motion, Ball_Size;
 	 
@@ -25,67 +24,71 @@ module  ball ( input Reset, frame_clk,
     parameter [9:0] Ball_X_Max=639;     // Rightmost point on the X axis
     parameter [9:0] Ball_Y_Min=0;       // Topmost point on the Y axis
     parameter [9:0] Ball_Y_Max=479;     // Bottommost point on the Y axis
-    parameter [9:0] Ball_X_Step=1;      // Step size on the X axis
-    parameter [9:0] Ball_Y_Step=1;      // Step size on the Y axis
+    parameter [9:0] Ball_X_Step=3;      // Step size on the X axis
+    parameter [9:0] Ball_Y_Step=3;      // Step size on the Y axis
 
     assign Ball_Size = 4;  // assigns the value 4 as a 10-digit binary number, ie "0000000100"
-   
-	logic [18:0] left_idx;
-	logic [18:0] right_idx;
-	logic [4:0]  score;
-	
+
+    int DistX, DistY;
+	 assign DistX = PaddleX - Ball_X_Pos;
+    assign DistY = PaddleY - Ball_Y_Pos;
+
+	 logic in_paddle;
+	 assign in_paddle = ((DistX*DistX/8) + ( DistY*DistY/(PaddleS*PaddleS) ) <= 1);
+		
     always_ff @ (posedge Reset or posedge frame_clk )
     begin: Move_Ball
         if (Reset)  // Asynchronous Reset
         begin 
-            Ball_Y_Motion <= 10'd0; //Ball_Y_Step;
-				Ball_X_Motion <= 10'd0; //Ball_X_Step;
+           // Ball_Y_Motion <= 10'd0; //Ball_Y_Step;
+			//	Ball_X_Motion <= 10'd0; //Ball_X_Step;
 				Ball_Y_Pos <= Ball_Y_Center;
 				Ball_X_Pos <= Ball_X_Center;
-				Ball_X_Motion <= -1;
-				Ball_Y_Motion<= -1;
+				
+				Ball_X_Motion <= 3;//A
+				Ball_Y_Motion <= -3;
+				Score1 <=0;
+				Score2 <=0;
+
         end
            
         else 
         begin 
-				 //right_idx = Ball_Y_Pos* 640 + Ball_X_Pos-Ball_Size;
-				 
-				/// all the bounces
-				 if ( bit_on)
-					  Ball_X_Motion <= (~ (Ball_X_Motion) + 1'b1);  // 2's complement.
-					  
-				 else if ( (Ball_Y_Pos + Ball_Size) >= Ball_Y_Max )  // Ball is at the bottom edge, BOUNCE!
-					  Ball_Y_Motion <= (~ (Ball_Y_Step) + 1'b1);  // 2's complement.
-					  
-				 else if ( (Ball_Y_Pos - Ball_Size) <= Ball_Y_Min )  // Ball is at the top edge, BOUNCE!
-					  Ball_Y_Motion <= Ball_Y_Step;
-					  
-				  else if ( (Ball_X_Pos + Ball_Size) >= Ball_X_Max )  // Ball is at the Right edge, BOUNCE!
-					  Ball_X_Motion <= (~ (Ball_X_Step) + 1'b1);  // 2's complement.
-					  
-				 else if ( (Ball_X_Pos - Ball_Size) <= Ball_X_Min )  // Ball is at the Left edge, BOUNCE!
-					  Ball_X_Motion <= Ball_X_Step;
-					  
-				 else 
-					  Ball_Y_Motion <= Ball_Y_Motion;  // Ball is somewhere in the middle, don't bounce, just keep moving
-					  
-				
-
-				 
-				 Ball_Y_Pos <= (Ball_Y_Pos + Ball_Y_Motion);  // Update ball position
-				 Ball_X_Pos <= (Ball_X_Pos + Ball_X_Motion);
-			
-			
-	  /**************************************************************************************
-	    ATTENTION! Please answer the following quesiton in your lab report! Points will be allocated for the answers!
-		 Hidden Question #2/2:
-          Note that Ball_Y_Motion in the above statement may have been changed at the same clock edge
-          that is causing the assignment of Ball_Y_pos.  Will the new value of Ball_Y_Motion be used,
-          or the old?  How will this impact behavior of the ball during a bounce, and how might that 
-          interact with a response to a keypress?  Can you fix it?  Give an answer in your Post-Lab.
-      **************************************************************************************/
-      
-			
+				 if (Score1<=9 && Score2<=9) begin 
+					 if ( (Ball_Y_Pos + Ball_Size-1) >= Ball_Y_Max )  // Ball is at the bottom edge, BOUNCE!
+						  Ball_Y_Motion <= (~ (Ball_Y_Step) + 1'b1);  // 2's complement.
+						  
+					 else if ( (Ball_Y_Pos - Ball_Size+1) <= Ball_Y_Min )  // Ball is at the top edge, BOUNCE!
+						  Ball_Y_Motion <= Ball_Y_Step;
+						  
+					  else if ( (Ball_X_Pos + Ball_Size) >= Ball_X_Max )  // Ball is at the Right edge, BOUNCE!
+					  begin  Ball_X_Motion <= (~ (Ball_X_Step) + 1'b1);  // 2's complement.
+//						  Ball_Y_Pos <= Ball_Y_Center;
+//						  Ball_X_Pos <= Ball_X_Center;
+//						  Ball_X_Motion <= 3;
+//						  Ball_Y_Motion <= -3;
+						  Score1 <= (Score1+1'b1);
+					  end	  
+					 else if ( (Ball_X_Pos - Ball_Size) <= Ball_X_Min)
+					 begin// Ball is at the Left edge, BOUNCE!
+//						  Ball_Y_Pos <= Ball_Y_Center;
+//						  Ball_X_Pos <= Ball_X_Center;
+//						  Ball_X_Motion <= -3;
+//						  Ball_Y_Motion <= 3;
+						  Ball_X_Motion <= (Ball_X_Step);
+						  Score2 <= (Score2+1'b1);
+					 end	  
+					 else 
+						  Ball_Y_Motion <= Ball_Y_Motion;  // Ball is somewhere in the middle, don't bounce, just keep moving
+						  
+					 
+					 Ball_Y_Pos <= (Ball_Y_Pos + Ball_Y_Motion);  // Update ball position
+					 Ball_X_Pos <= (Ball_X_Pos + Ball_X_Motion);
+				 end 
+				 else begin
+					 Ball_Y_Pos <= Ball_Y_Center;
+					 Ball_X_Pos <= Ball_X_Center;
+				 end	 
 		end  
     end
        
