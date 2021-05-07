@@ -43,12 +43,12 @@ module  ball ( input Reset, frame_clk,
 
   int launch_angle = 0;
   assign launch_angle = ((DistY)/PaddleS);
-  logic [9:0] launch_bytes;
+  logic [3:0] launch_bytes;
   always_comb begin
     if (launch_angle > 0)
-		launch_bytes = launch_angle;
+		launch_bytes = launch_angle[3:0];
 	 else 
-	   launch_bytes = (-launch_angle);
+	   launch_bytes = ~(launch_angle[3:0])+1'b1;
   end
 
   assign Score1 = Ball_Y_Motion;

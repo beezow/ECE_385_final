@@ -53,7 +53,6 @@ wire 				 PCLK_cam;
 wire 				 sioc;
 wire  			 siod;	
 logic 				 MCLK_cam;
-logic dilat_on;
 logic scam;
 
 assign data_cam[7:0] = ARDUINO_IO[7:0];
@@ -193,17 +192,6 @@ color_mapper colormaple( .BallX(ballxsig), .BallY(ballysig),
 								 .ball_on);
 //							//	 .Red, .Green, .Blue);	
 
-//logic eros_on, eros_on2, dilat_on2;
-//erosion erosion1(.CLK(MAX10_CLK1_50), .RST(KEY[0]), .iDVAL(1'b1), .iDATA(bit_on), .oDATA(eros_on),
-//	.oDVAL(scam));
-//dilation dilation1(.CLK(MAX10_CLK1_50), .RST(KEY[0]), .iDVAL(1'b1), .iDATA(eros_on), .oDATA(dilat_on),
-//	.oDVAL(scam));	
-//erosion erosion2(.CLK(MAX10_CLK1_50), .RST(KEY[0]), .iDVAL(1'b1), .iDATA(dilat_on2), .oDATA(eros_on2),
-//	.oDVAL(scam));
-//dilation dilation2(.CLK(MAX10_CLK1_50), .RST(KEY[0]), .iDVAL(1'b1), .iDATA(dilat_on), .oDATA(dilat_on2),
-//	.oDVAL(scam));		
-//
-
 logic shape_on1, shape_on2, shape_on3;
 logic [10:0] shape_x1 = 308;
 logic [10:0] shape_y1 = 10;
@@ -278,7 +266,11 @@ begin
 		sprite_addr3 = 10'b0;
 	end	
 end		
-												
+
+logic eros_on, eros_on2, dilat_on;
+erosion erosion1(.CLK(MCLK_cam), .RST(Reset_h), .Value(1'b1), .Data_in(bit_on), .Data_out(eros_on));												
+erosion erosion2(.CLK(MCLK_cam), .RST(Reset_h), .Value(1'b1), .Data_in(eros_on), .Data_out(eros_on2));												
+dilation dilation1(.CLK(MCLK_cam), .RST(Reset_h), .Value(1'b1), .Data_in(eros_on2), .Data_out(dilat_on));
 
 always_comb begin
 	if (blank) begin
@@ -293,7 +285,7 @@ always_comb begin
 			Blue = 8'h44;
 		end
 		else begin
-			unique case (bit_on)
+			unique case (dilat_on)
 				1'b1: begin
 					Red = 8'hDD;
 					Green = 8'hDD;
