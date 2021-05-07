@@ -24,7 +24,7 @@ module  paddle ( input Reset, frame_clk, vga_clk, bit_on,
     parameter [9:0] Paddle_Y_Max=479;     // Bottommost point on the Y axis
     parameter [9:0] Paddle_Y_Step=1;      // Step size on the Y axis
 
-    assign Paddle_Size = 80;  // assigns the value 4 as a 10-digit binary number, ie "0000000100"
+    assign Paddle_Size = 80; 
    
 	logic bottom_pix;
 	logic top_pix;
