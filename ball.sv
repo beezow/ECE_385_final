@@ -15,6 +15,7 @@
 
 module  ball ( input Reset, frame_clk,
 					input [9:0] PaddleX, PaddleY, PaddleS,
+					input [9:0] Paddle2X, Paddle2Y, Paddle2S,
                output [9:0]  BallX, BallY, BallS );
     
     logic [9:0] Ball_X_Pos, Ball_X_Motion, Ball_Y_Pos, Ball_Y_Motion, Ball_Size;
@@ -36,6 +37,13 @@ module  ball ( input Reset, frame_clk,
 
 	 logic in_paddle;
 	 assign in_paddle = ((DistX*DistX/8) + ( DistY*DistY/(PaddleS*PaddleS) ) <= 1);
+	 
+	 int DistX2, DistY2;
+	 assign DistX2 = Paddle2X - Ball_X_Pos;
+    assign DistY2 = Paddle2Y - Ball_Y_Pos;
+
+	 logic in_paddle2;
+	 assign in_paddle2 = ((DistX2*DistX2/8) + ( DistY2*DistY2/(Paddle2S*Paddle2S) ) <= 1);
 	
     always_ff @ (posedge Reset or posedge frame_clk )
     begin: Move_Ball
@@ -59,7 +67,7 @@ module  ball ( input Reset, frame_clk,
 				 else if ( (Ball_Y_Pos - Ball_Size) <= Ball_Y_Min )  // Ball is at the top edge, BOUNCE!
 					  Ball_Y_Motion <= Ball_Y_Step;
 					  
-				  else if ( (Ball_X_Pos + Ball_Size) >= Ball_X_Max )  // Ball is at the Right edge, BOUNCE!
+				  else if ( (Ball_X_Pos + Ball_Size) >= Ball_X_Max || in_paddle2 )  // Ball is at the Right edge, BOUNCE!
 					  Ball_X_Motion <= (~ (Ball_X_Step) + 1'b1);  // 2's complement.
 					  
 				 else if ( (Ball_X_Pos - Ball_Size) <= Ball_X_Min || in_paddle)  // Ball is at the Left edge, BOUNCE!

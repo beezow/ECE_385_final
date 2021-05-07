@@ -138,31 +138,37 @@ ram307200x1 ram(.out(bit_on), .in(cam_pixel), .clk(MAX10_CLK1_50), .write_addr( 
 					
 logic paddle_col [480];
 logic [9:0] paddlexsig, paddleysig, paddlesizesig;
+logic paddle2_col [480];
+logic [9:0] paddle2xsig, paddle2ysig, paddle2sizesig;
 
-ram480x1 ram_small(.out(paddle_col), .in(bit_on), .clk(MAX10_CLK1_50), .write_addr( drawysig ) , .rst(Reset_h), .we(drawxsig == 10'd20),
+ram480x1 ram_small(.out(paddle_col), .in(bit_on), .clk(MAX10_CLK1_50), .write_addr( drawysig ) , .rst(Reset_h), .we(drawxsig == paddlexsig),
 				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
 					 );
 					
-					 
+
+ram480x1 ram_smal2l(.out(paddle2_col), .in(bit_on), .clk(MAX10_CLK1_50), .write_addr( drawysig ) , .rst(Reset_h), .we(drawxsig == paddle2xsig),
+				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
+					 );					
 //ram307200x1 ram(.out(bit_on), .in(cam_pixel), .clk(MAX10_CLK1_50), .write_addr( cam_count ) , .readt_addr(read_addr), .rst(Reset_h), .we(!cam_blank));
 
 
 ball 	  baller(.Reset (Reset_h), .frame_clk(VGA_VS),
                .BallX(ballxsig), .BallY(ballysig),
 					.BallS(ballsizesig),
-					.PaddleX(paddlexsig), .PaddleY(paddleysig), .PaddleS(paddlesizesig));			
+					.PaddleX(paddlexsig), .PaddleY(paddleysig), .PaddleS(paddlesizesig),
+					.Paddle2X(paddle2xsig), .Paddle2Y(paddle2ysig), .Paddle2S(paddle2sizesig));			
 
 assign paddlexsig = 20;
 assign paddlesizesig = 80;
 center col_cent(.col(paddle_col), .center(paddleysig))	;							 
-HexDriver hex1(.In0(paddleysig[3:0]), .Out0(HEX3));
-HexDriver hex2(.In0(paddleysig[7:4]), .Out0(HEX4));
-HexDriver hex3(.In0(paddleysig[9:8]), .Out0(HEX5));
-					
-/*paddle 	  paddle(.bit_on, .Reset (Reset_h), .frame_clk(VGA_VS), .vga_clk(MAX10_CLK1_50),
-               .paddleX(paddlexsig), .paddleY(paddleysig),
-					.paddleS(paddlesizesig));
-	*/				
+
+assign paddle2xsig = 620;
+assign paddle2sizesig = 80;
+center col_cent2(.col(paddle2_col), .center(paddle2ysig))	;							 
+
+HexDriver hex1(.In0(paddle2ysig[3:0]), .Out0(HEX3));
+HexDriver hex2(.In0(paddle2ysig[7:4]), .Out0(HEX4));
+HexDriver hex3(.In0(paddle2ysig[9:8]), .Out0(HEX5));		
 					
 
 logic ball_on;
@@ -177,7 +183,12 @@ paddle_mapper paddlemap( .BallX(paddlexsig), .BallY(paddleysig),
 								 .Ball_size(paddlesizesig),
 								 .ball_on(paddle_on));
 							//	 .Red, .Green, .Blue);	
-
+logic paddle2_on;			 
+paddle_mapper paddlemap2( .BallX(paddle2xsig), .BallY(paddle2ysig),
+								 .DrawX(drawxsig), .DrawY(drawysig), 
+								 .Ball_size(paddle2sizesig),
+								 .ball_on(paddle2_on));
+							//	 .Red, .Green, .Blue);	
 							
 always_comb begin
 	if (blank) begin
@@ -186,7 +197,7 @@ always_comb begin
 			Green = 8'h00;
 			Blue = 8'h00;
 		end
-		else if (paddle_on) begin
+		else if (paddle_on | paddle2_on) begin
 			Red = 8'h00;
 			Green = 8'h00;
 			Blue = 8'h44;
