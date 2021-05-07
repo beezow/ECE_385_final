@@ -152,14 +152,14 @@ logic [9:0] paddlexsig, paddleysig, paddlesizesig;
 logic paddle2_col [480];
 logic [9:0] paddle2xsig, paddle2ysig, paddle2sizesig;
 
-ram480x1 ram_small(.out(paddle_col), .in(bit_on), .clk(MAX10_CLK1_50), .write_addr( drawysig ) , .rst(Reset_h), .we(drawxsig == paddlexsig),
-				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
-					 );
-					
-
-ram480x1 ram_smal2l(.out(paddle2_col), .in(bit_on), .clk(MAX10_CLK1_50), .write_addr( drawysig ) , .rst(Reset_h), .we(drawxsig == paddle2xsig),
-				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
-					 );					
+//ram480x1 ram_small(.out(paddle_col), .in(bit_on), .clk(MAX10_CLK1_50), .write_addr( drawysig ) , .rst(Reset_h), .we(drawxsig == paddlexsig),
+//				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
+//					 );
+//					
+//
+//ram480x1 ram_smal2l(.out(paddle2_col), .in(bit_on), .clk(MAX10_CLK1_50), .write_addr( drawysig ) , .rst(Reset_h), .we(drawxsig == paddle2xsig),
+//				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
+//					 );					
 //ram307200x1 ram(.out(bit_on), .in(cam_pixel), .clk(MAX10_CLK1_50), .write_addr( cam_count ) , .readt_addr(read_addr), .rst(Reset_h), .we(!cam_blank));
 
 logic [3:0] Score1, Score2; 
@@ -193,12 +193,33 @@ color_mapper colormaple( .BallX(ballxsig), .BallY(ballysig),
 //							//	 .Red, .Green, .Blue);	
 
 logic shape_on1, shape_on2, shape_on3;
+logic shape_on4, shape_on5, shape_on6, shape_on7,
+ shape_on8, shape_on9, shape_on10, shape_on11;
 logic [10:0] shape_x1 = 308;
 logic [10:0] shape_y1 = 10;
 logic [10:0] shape_x2 = 320;
 logic [10:0] shape_y2 = 10;	
 logic [10:0] shape_x3 = 332;
-logic [10:0] shape_y3 = 10;		
+logic [10:0] shape_y3 = 10;
+
+logic [10:0] shape_x4 = 296;
+logic [10:0] shape_y4 = 228;
+logic [10:0] shape_x5 = 310;
+logic [10:0] shape_y5 = 228;	
+logic [10:0] shape_x6 = 324;
+logic [10:0] shape_y6 = 228;
+logic [10:0] shape_x7 = 338;
+logic [10:0] shape_y7 = 228;
+
+logic [10:0] shape_x8 = 296;
+logic [10:0] shape_y8 = 240;
+logic [10:0] shape_x9 = 310;
+logic [10:0] shape_y9 = 240;	
+logic [10:0] shape_x10 = 324;
+logic [10:0] shape_y10 = 240;
+logic [10:0] shape_x11 = 338;
+logic [10:0] shape_y11 = 240;
+	
 logic [10:0] shape_size_x = 8;
 logic [10:0] shape_size_y = 16;
 
@@ -207,6 +228,144 @@ logic [7:0] sprite_data1, sprite_data2, sprite_data3;
 font_rom score1(.addr(sprite_addr1), .data(sprite_data1));
 font_rom score2(.addr(sprite_addr2), .data(sprite_data2));
 font_rom score3(.addr(sprite_addr3), .data(sprite_data3));
+
+logic game_over = 1'b1;
+logic [10:0] sprite_addr4, sprite_addr5, sprite_addr6, 
+sprite_addr7, sprite_addr8, sprite_addr9, sprite_addr10, sprite_addr11;
+logic [7:0] sprite_data4, sprite_data5, sprite_data6, sprite_data7, sprite_data8, 
+sprite_data9, sprite_data10, sprite_data11;
+
+font_rom score4(.addr(sprite_addr4), .data(sprite_data4));
+font_rom score5(.addr(sprite_addr5), .data(sprite_data5));
+font_rom score6(.addr(sprite_addr6), .data(sprite_data6));
+font_rom score7(.addr(sprite_addr7), .data(sprite_data7));
+font_rom score8(.addr(sprite_addr8), .data(sprite_data8));
+font_rom score9(.addr(sprite_addr9), .data(sprite_data9));
+font_rom score10(.addr(sprite_addr10), .data(sprite_data10));
+font_rom score11(.addr(sprite_addr11), .data(sprite_data11));
+
+always_comb 
+begin
+	if(drawxsig>= shape_x4 && drawxsig<shape_x4+shape_size_x &&
+	drawysig>= shape_y4 && drawysig<shape_y4+shape_size_y)
+	begin
+		shape_on4 = 1'b1;
+		sprite_addr4 = (drawysig-shape_y4+16*'h47);
+	end
+	else 
+	begin
+		shape_on4 = 1'b0;
+		sprite_addr4 = 10'b0;
+	end	
+end
+
+
+always_comb 
+begin
+	if(drawxsig>= shape_x5 && drawxsig<shape_x5+shape_size_x &&
+	drawysig>= shape_y5 && drawysig<shape_y5+shape_size_y)
+	begin
+		shape_on5 = 1'b1;
+		sprite_addr5 = (drawysig-shape_y5+16*'h41);
+	end
+	else 
+	begin
+		shape_on5= 1'b0;
+		sprite_addr5 = 10'b0;
+	end	
+end
+
+always_comb 
+begin
+	if(drawxsig>= shape_x6 && drawxsig<shape_x6+shape_size_x &&
+	drawysig>= shape_y6 && drawysig<shape_y6+shape_size_y)
+	begin
+		shape_on6 = 1'b1;
+		sprite_addr6 = (drawysig-shape_y6+16*'h4d);
+	end
+	else 
+	begin
+		shape_on6= 1'b0;
+		sprite_addr6 = 10'b0;
+	end	
+end	
+
+always_comb 
+begin
+	if(drawxsig>= shape_x7 && drawxsig<shape_x7+shape_size_x &&
+	drawysig>= shape_y7 && drawysig<shape_y7+shape_size_y)
+	begin
+		shape_on7 = 1'b1;
+		sprite_addr7 = (drawysig-shape_y7+16*'h45);
+	end
+	else 
+	begin
+		shape_on7= 1'b0;
+		sprite_addr7 = 10'b0;
+	end	
+end
+
+always_comb 
+begin
+	if(drawxsig>= shape_x8 && drawxsig<shape_x8+shape_size_x &&
+	drawysig>= shape_y8&& drawysig<shape_y8+shape_size_y)
+	begin
+		shape_on8 = 1'b1;
+		sprite_addr8 = (drawysig-shape_y8+16*'h4f);
+	end
+	else 
+	begin
+		shape_on8= 1'b0;
+		sprite_addr8 = 10'b0;
+	end	
+end
+
+always_comb 
+begin
+	if(drawxsig>= shape_x9 && drawxsig<shape_x9+shape_size_x &&
+	drawysig>= shape_y9&& drawysig<shape_y9+shape_size_y)
+	begin
+		shape_on9 = 1'b1;
+		sprite_addr9 = (drawysig-shape_y9+16*'h56);
+	end
+	else 
+	begin
+		shape_on9= 1'b0;
+		sprite_addr9 = 10'b0;
+	end	
+end
+
+always_comb 
+begin
+	if(drawxsig>= shape_x10 && drawxsig<shape_x10+shape_size_x &&
+	drawysig>= shape_y10&& drawysig<shape_y10+shape_size_y)
+	begin
+		shape_on10 = 1'b1;
+		sprite_addr10 = (drawysig-shape_y10+16*'h45);
+	end
+	else 
+	begin
+		shape_on10= 1'b0;
+		sprite_addr10 = 10'b0;
+	end	
+end
+
+always_comb 
+begin
+	if(drawxsig>= shape_x11 && drawxsig<shape_x11+shape_size_x &&
+	drawysig>= shape_y11&& drawysig<shape_y11+shape_size_y)
+	begin
+		shape_on11 = 1'b1;
+		sprite_addr11 = (drawysig-shape_y11+16*'h52);
+	end
+	else 
+	begin
+		shape_on11= 1'b0;
+		sprite_addr11 = 10'b0;
+	end	
+end
+
+
 
 always_comb 
 begin
@@ -224,18 +383,18 @@ begin
 end
 
 logic paddle_on;			 
-paddle_mapper paddlemap( .BallX(paddlexsig), .BallY(paddleysig),
-								 .DrawX(drawxsig), .DrawY(drawysig), 
-								 .Ball_size(paddlesizesig),
-								 .ball_on(paddle_on));
-							//	 .Red, .Green, .Blue);	
+//paddle_mapper paddlemap( .BallX(paddlexsig), .BallY(paddleysig),
+//								 .DrawX(drawxsig), .DrawY(drawysig), 
+//								 .Ball_size(paddlesizesig),
+//								 .ball_on(paddle_on));
+//							//	 .Red, .Green, .Blue);	
 logic paddle2_on;			 
-paddle_mapper paddlemap2( .BallX(paddle2xsig), .BallY(paddle2ysig),
-								 .DrawX(drawxsig), .DrawY(drawysig), 
-								 .Ball_size(paddle2sizesig),
-								 .ball_on(paddle2_on));
-							//	 .Red, .Green, .Blue);	
-							
+//paddle_mapper paddlemap2( .BallX(paddle2xsig), .BallY(paddle2ysig),
+//								 .DrawX(drawxsig), .DrawY(drawysig), 
+//								 .Ball_size(paddle2sizesig),
+//								 .ball_on(paddle2_on));
+//							//	 .Red, .Green, .Blue);	
+//							
 
 always_comb 
 begin
@@ -252,6 +411,7 @@ begin
 	end	
 end
 
+
 always_comb 
 begin
 	if(drawxsig>= shape_x3 && drawxsig<shape_x3+shape_size_x &&
@@ -265,7 +425,7 @@ begin
 		shape_on3= 1'b0;
 		sprite_addr3 = 10'b0;
 	end	
-end		
+end
 
 logic eros_on, eros_on2, dilat_on;
 erosion erosion1(.CLK(MCLK_cam), .RST(Reset_h), .Value(1'b1), .Data_in(bit_on), .Data_out(eros_on));												
@@ -303,7 +463,7 @@ always_comb begin
 				Green = 8'hff;
 				Blue = 8'h00;
 			end
-			if ((shape_on2 == 1'b1) && sprite_data2[drawxsig - shape_x2] == 1'b1)
+			if ((shape_on2 == 1'b1) && sprite_data2[shape_x2 - drawxsig] == 1'b1)
 			begin
 				Red = 8'h00;
 				Green = 8'hff;
@@ -315,6 +475,66 @@ always_comb begin
 				Green = 8'hff;
 				Blue = 8'h00;
 			end
+			
+			if (game_over) begin
+			
+			if ((shape_on4 == 1'b1) && sprite_data4[shape_x4 - drawxsig] == 1'b1)
+			begin
+				Red = 8'h00;
+				Green = 8'hff;
+				Blue = 8'h00;
+			end
+			if ((shape_on5 == 1'b1) && sprite_data5[shape_x5 - drawxsig] == 1'b1)
+			begin
+				Red = 8'h00;
+				Green = 8'hff;
+				Blue = 8'h00;
+			end
+			if ((shape_on6 == 1'b1) && sprite_data6[shape_x6 - drawxsig] == 1'b1)
+			begin
+				Red = 8'h00;
+				Green = 8'hff;
+				Blue = 8'h00;
+			end
+			if ((shape_on7 == 1'b1) && sprite_data7[shape_x7 - drawxsig] == 1'b1)
+			begin
+				Red = 8'h00;
+				Green = 8'hff;
+				Blue = 8'h00;
+			end
+			if ((shape_on8 == 1'b1) && sprite_data8[shape_x8 - drawxsig] == 1'b1)
+			begin
+				Red = 8'h00;
+				Green = 8'hff;
+				Blue = 8'h00;
+			end
+			if ((shape_on9 == 1'b1) && sprite_data9[shape_x9 - drawxsig] == 1'b1)
+			begin
+				Red = 8'h00;
+				Green = 8'hff;
+				Blue = 8'h00;
+			end
+			if ((shape_on1 == 1'b1) && sprite_data1[shape_x1 - drawxsig] == 1'b1)
+			begin
+				Red = 8'h00;
+				Green = 8'hff;
+				Blue = 8'h00;
+			end
+			if ((shape_on10 == 1'b1) && sprite_data10[shape_x10 - drawxsig] == 1'b1)
+			begin
+				Red = 8'h00;
+				Green = 8'hff;
+				Blue = 8'h00;
+			end
+			if ((shape_on11 == 1'b1) && sprite_data11[shape_x11 - drawxsig] == 1'b1)
+			begin
+				Red = 8'h00;
+				Green = 8'hff;
+				Blue = 8'h00;
+			end
+			
+			end
+			
 //			else begin
 //				Red = 8'h4f - drawxsig[9:3];
 //				Green = 8'h00;
