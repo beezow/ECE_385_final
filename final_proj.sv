@@ -152,14 +152,14 @@ logic [9:0] paddlexsig, paddleysig, paddlesizesig;
 logic paddle2_col [480];
 logic [9:0] paddle2xsig, paddle2ysig, paddle2sizesig;
 
-//ram480x1 ram_small(.out(paddle_col), .in(bit_on), .clk(MAX10_CLK1_50), .write_addr( drawysig ) , .rst(Reset_h), .we(drawxsig == paddlexsig),
-//				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
-//					 );
-//					
-//
-//ram480x1 ram_smal2l(.out(paddle2_col), .in(bit_on), .clk(MAX10_CLK1_50), .write_addr( drawysig ) , .rst(Reset_h), .we(drawxsig == paddle2xsig),
-//				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
-//					 );					
+ram480x1 ram_small(.out(paddle_col), .in(bit_on), .clk(MAX10_CLK1_50), .write_addr( drawysig ) , .rst(Reset_h), .we(drawxsig == paddlexsig),
+				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
+					 );
+					
+
+ram480x1 ram_smal2l(.out(paddle2_col), .in(bit_on), .clk(MAX10_CLK1_50), .write_addr( drawysig ) , .rst(Reset_h), .we(drawxsig == paddle2xsig),
+				    //.out2(ball_pixel), .read_addr2(ball_read_addr)
+					 );					
 //ram307200x1 ram(.out(bit_on), .in(cam_pixel), .clk(MAX10_CLK1_50), .write_addr( cam_count ) , .readt_addr(read_addr), .rst(Reset_h), .we(!cam_blank));
 
 logic [3:0] Score1, Score2; 
@@ -169,7 +169,8 @@ ball 	  baller(.Reset (Reset_h), .frame_clk(VGA_VS),
 					.BallS(ballsizesig),
 					.PaddleX(paddlexsig), .PaddleY(paddleysig), .PaddleS(paddlesizesig),
 					.Paddle2X(paddle2xsig), .Paddle2Y(paddle2ysig), .Paddle2S(paddle2sizesig),
-					.Score1, .Score2);			
+					.Score1, .Score2,
+					.game_over);			
 
 assign paddlexsig = 30;
 assign paddlesizesig = 80;
@@ -229,7 +230,7 @@ font_rom score1(.addr(sprite_addr1), .data(sprite_data1));
 font_rom score2(.addr(sprite_addr2), .data(sprite_data2));
 font_rom score3(.addr(sprite_addr3), .data(sprite_data3));
 
-logic game_over = 1'b1;
+logic game_over;
 logic [10:0] sprite_addr4, sprite_addr5, sprite_addr6, 
 sprite_addr7, sprite_addr8, sprite_addr9, sprite_addr10, sprite_addr11;
 logic [7:0] sprite_data4, sprite_data5, sprite_data6, sprite_data7, sprite_data8, 
@@ -383,18 +384,18 @@ begin
 end
 
 logic paddle_on;			 
-//paddle_mapper paddlemap( .BallX(paddlexsig), .BallY(paddleysig),
-//								 .DrawX(drawxsig), .DrawY(drawysig), 
-//								 .Ball_size(paddlesizesig),
-//								 .ball_on(paddle_on));
-//							//	 .Red, .Green, .Blue);	
+paddle_mapper paddlemap( .BallX(paddlexsig), .BallY(paddleysig),
+								 .DrawX(drawxsig), .DrawY(drawysig), 
+								 .Ball_size(paddlesizesig),
+								 .ball_on(paddle_on));
+							//	 .Red, .Green, .Blue);	
 logic paddle2_on;			 
-//paddle_mapper paddlemap2( .BallX(paddle2xsig), .BallY(paddle2ysig),
-//								 .DrawX(drawxsig), .DrawY(drawysig), 
-//								 .Ball_size(paddle2sizesig),
-//								 .ball_on(paddle2_on));
-//							//	 .Red, .Green, .Blue);	
-//							
+paddle_mapper paddlemap2( .BallX(paddle2xsig), .BallY(paddle2ysig),
+								 .DrawX(drawxsig), .DrawY(drawysig), 
+								 .Ball_size(paddle2sizesig),
+								 .ball_on(paddle2_on));
+							//	 .Red, .Green, .Blue);	
+							
 
 always_comb 
 begin
