@@ -35,7 +35,7 @@ module  ball ( input Reset, frame_clk,
 
 	 logic in_paddle;
 	 assign in_paddle = ((DistX*DistX/8) + ( DistY*DistY/(PaddleS*PaddleS) ) <= 1);
-		
+
     always_ff @ (posedge Reset or posedge frame_clk )
     begin: Move_Ball
         if (Reset)  // Asynchronous Reset
