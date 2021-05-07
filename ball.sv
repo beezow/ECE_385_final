@@ -15,7 +15,8 @@ module  ball ( input Reset, frame_clk,
               input [9:0] PaddleX, PaddleY, PaddleS,
               input [9:0] Paddle2X, Paddle2Y, Paddle2S,
               output [9:0]  BallX, BallY, BallS,
-              output [3:0] Score1, Score2);
+              output [3:0] Score1, Score2,
+				  output logic game_over);
 
   logic [9:0] Ball_X_Pos, Ball_X_Motion, Ball_Y_Pos, Ball_Y_Motion, Ball_Size;
 
@@ -51,8 +52,8 @@ module  ball ( input Reset, frame_clk,
 	   launch_bytes = ~(launch_angle[3:0])+1'b1;
   end
 
-  assign Score1 = Ball_Y_Motion;
-  assign Score2 = launch_bytes;
+//  assign Score1 = Ball_Y_Motion;
+//  assign Score2 = launch_bytes;
 
   int DistX2, DistY2;
   assign DistX2 = Paddle2X - Ball_X_Pos;
@@ -64,6 +65,7 @@ module  ball ( input Reset, frame_clk,
 
   always_ff @ (posedge Reset or posedge frame_clk )
     begin: Move_Ball
+	 
       if (Reset)  // Asynchronous Reset
         begin 
           // Ball_Y_Motion <= 10'd0; //Ball_Y_Step;
@@ -75,14 +77,15 @@ module  ball ( input Reset, frame_clk,
 
           Ball_X_Motion <= -Ball_X_Step;
           Ball_Y_Motion <= -Ball_Y_Step;
-//          Score1 <=0;
-//          Score2 <=0;
+          Score1 <=0;
+          Score2 <=0;
+			 game_over <= 0;
 
         end
 
       else 
         begin 
-          if (1'b1 | Score1<=9 && Score2<=9) begin 
+          if (Score1<=9 && Score2<=9) begin 
             if ( (Ball_Y_Pos + Ball_Size-1) >= Ball_Y_Max - Ball_Y_Step)  // Ball is at the bottom edge, BOUNCE!
               Ball_Y_Motion <= (~ (Ball_Y_Step) + 1'b1);  // 2's complement.
 
@@ -90,7 +93,16 @@ module  ball ( input Reset, frame_clk,
               Ball_Y_Motion <= Ball_Y_Step;
 
             else  if (in_paddle2) begin
-              Ball_X_Motion <= (~ (Ball_X_Step) + 1'b1);  // 2's complement.
+				   Ball_Y_Step <= launch_bytes;				
+					//Ball_X_Step <= Ball_X_Step;
+					if (launch_angle > 0) begin
+						Ball_Y_Motion <= (launch_bytes);
+					end else begin
+						//Ball_Y_Motion <= (~(launch_bytes) + 1'b1);
+						Ball_Y_Motion <= ~(launch_bytes) + 1'b1;
+					end
+					
+               Ball_X_Motion <= (~ (Ball_X_Step) + 1'b1);  // 2's complement.
             end
             else if (in_paddle) begin
 					Ball_Y_Step <= launch_bytes;				
@@ -99,7 +111,7 @@ module  ball ( input Reset, frame_clk,
 						Ball_Y_Motion <= (launch_bytes);
 					end else begin
 						//Ball_Y_Motion <= (~(launch_bytes) + 1'b1);
-						Ball_Y_Motion <= (launch_bytes);
+						Ball_Y_Motion <= (~(launch_bytes) + 1'b1);
 					end
 					Ball_X_Motion <= (Ball_X_Step);
 				   
@@ -118,8 +130,7 @@ module  ball ( input Reset, frame_clk,
 					 Ball_Y_Step <= Ball_Y_Step_start;
    				 Ball_X_Motion <= -(Ball_X_Step_start);
 					 Ball_Y_Motion <= (Ball_Y_Step_start);
-
-                //Score1 <= (Score1+1'b1);
+                Score1 <= (Score1+1'b1);            
               end	  
             else if ( (Ball_X_Pos - Ball_Size) <= Ball_X_Min + Ball_X_Step)
               begin// Ball is at the Left edge, BOUNCE!
@@ -128,10 +139,10 @@ module  ball ( input Reset, frame_clk,
                 Ball_X_Pos <= Ball_X_Center;
 					 Ball_X_Step <= Ball_X_Step_start;
 					 Ball_Y_Step <= Ball_Y_Step_start;
-   				 Ball_X_Motion <= -(Ball_X_Step_start);
-					 Ball_Y_Motion <= (Ball_Y_Step_start);
-                //Score2 <= (Score2+1'b1);
-              end	  
+   				 Ball_X_Motion <= (Ball_X_Step_start);
+					 Ball_Y_Motion <= -(Ball_Y_Step_start);
+ 					 Score2 <= (Score2+1'b1);
+    			 end	  
             else begin
               Ball_Y_Pos <= (Ball_Y_Pos + Ball_Y_Motion);  // Update ball position
               Ball_X_Pos <= (Ball_X_Pos + Ball_X_Motion);
@@ -145,10 +156,12 @@ module  ball ( input Reset, frame_clk,
             Ball_X_Pos <= Ball_X_Center;
 				Ball_X_Step <= Ball_X_Step_start;
 				Ball_Y_Step <= Ball_Y_Step_start;
-   			Ball_X_Motion <= -(Ball_X_Step_start);
-				Ball_Y_Motion <= (Ball_Y_Step_start);
-//            Score1 <= 0;
-//            Score2 <= 0;
+   			Ball_X_Motion <= 0;
+				Ball_Y_Motion <= 0;
+            Score1 <= 0;
+            Score2 <= 0;
+            game_over <= 1;
+
           end	 
         end  
     end

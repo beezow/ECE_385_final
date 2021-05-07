@@ -171,11 +171,11 @@ ball 	  baller(.Reset (Reset_h), .frame_clk(VGA_VS),
 					.Paddle2X(paddle2xsig), .Paddle2Y(paddle2ysig), .Paddle2S(paddle2sizesig),
 					.Score1, .Score2);			
 
-assign paddlexsig = 20;
+assign paddlexsig = 30;
 assign paddlesizesig = 80;
 center col_cent(.col(paddle_col), .center(paddleysig))	;							 
 
-assign paddle2xsig = 620;
+assign paddle2xsig = 610;
 assign paddle2sizesig = 80;
 center col_cent2(.col(paddle2_col), .center(paddle2ysig))	;							 
 
